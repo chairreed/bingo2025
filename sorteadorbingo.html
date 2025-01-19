@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteador de Números de Bingo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            display: flex;
+            justify-content: space-around;  /* Alinha os itens com espaçamento ao redor */
+            align-items: flex-start;        /* Alinha os itens no topo */
+            width: 100%;
+        }
+        div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .bola {
+            width: 100px;
+            height: 100px;
+            background-color: #f4b41a;
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            margin: 20px;
+            border-collapse: collapse;
+            width: 80%;
+            max-width: 600px;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            font-size: 16px;
+        }
+        th {
+            background-color: #f4b41a;
+            color: white;
+            font-size: 18px;
+        }
+        td {
+            background-color: #f9f9f9;
+            transition: background-color 0.3s;
+        }
+        td.sorteado {
+            background-color: #d3f8d3;
+            font-weight: bold;
+        }
+        .ultimas-bolas {
+            width: 250px;  /* Ajuste a largura conforme necessário */
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            margin-top: 20px;
+        }
+        .ultimas-bolas h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        .ultimas-bolas div {
+            font-size: 20px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: right;
+        }
+        .ultimas-bolas span {
+            margin: 5px;
+            padding: 5px 10px;
+            background-color: #f4b41a;
+            color: white;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div>
+            <h1>Sorteador de Números de Bingo</h1>
+            <div class="bola" id="bolaNumero">--</div>
+            <button onclick="sortearNumero()">Sortear Número</button>
+            <button onclick="limparMarcados()">Limpar Marcados</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th>B</th>
+                        <th>I</th>
+                        <th>N</th>
+                        <th>G</th>
+                        <th>O</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaNumeros">
+                    <!-- Linhas da tabela de números -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="ultimas-bolas">
+            <h3>Últimas 10 Bolas</h3>
+            <div id="listaUltimasBolas"></div>
+        </div>
+    </div>
+
+    <script>
+        const numerosSorteados = new Set();
+        const tabela = document.getElementById('tabelaNumeros');
+        const listaUltimasBolas = document.getElementById('listaUltimasBolas');
+        const ultimasBolas = [];
+
+        // Função para gerar a tabela de números
+        function criarTabela() {
+            for (let i = 0; i < 15; i++) {
+                const linha = document.createElement('tr');
+                for (let j = 0; j < 5; j++) {
+                    const coluna = j + 1; // Colunas correspondem a B=1, I=2, N=3, G=4, O=5
+                    const numero = (coluna - 1) * 15 + i + 1; // Fórmula para números por coluna
+                    const celula = document.createElement('td');
+                    celula.id = `num${numero}`;
+                    celula.textContent = numero;
+                    linha.appendChild(celula);
+                }
+                tabela.appendChild(linha);
+            }
+        }
+
+        // Função para determinar a letra do número
+        function determinarLetra(numero) {
+            if (numero >= 1 && numero <= 15) return 'B';
+            if (numero >= 16 && numero <= 30) return 'I';
+            if (numero >= 31 && numero <= 45) return 'N';
+            if (numero >= 46 && numero <= 60) return 'G';
+            if (numero >= 61 && numero <= 75) return 'O';
+        }
+
+        // Função para sortear números
+        function sortearNumero() {
+            if (numerosSorteados.size === 75) {
+                alert('Todos os números já foram sorteados!');
+                return;
+            }
+
+            let numero;
+            do {
+                numero = Math.floor(Math.random() * 75) + 1;
+            } while (numerosSorteados.has(numero));
+
+            numerosSorteados.add(numero);
+            const letra = determinarLetra(numero);
+            document.getElementById('bolaNumero').textContent = `${letra}-${numero}`;
+
+            // Marcar o número sorteado na tabela
+            const celula = document.getElementById(`num${numero}`);
+            if (celula) {
+                celula.classList.add('sorteado');
+            }
+
+            // Atualizar lista das últimas 10 bolas
+            ultimasBolas.unshift({ bola: `${letra}-${numero}`, numero });
+            if (ultimasBolas.length > 10) {
+                ultimasBolas.pop();
+            }
+
+            ultimasBolas.sort((a, b) => a.numero - b.numero);  // Ordena as bolas de 1 a 10
+
+            atualizarUltimasBolas();
+        }
+
+        // Função para atualizar o display das últimas bolas
+        function atualizarUltimasBolas() {
+            listaUltimasBolas.innerHTML = '';
+            ultimasBolas.forEach(({ bola }) => {
+                const span = document.createElement('span');
+                span.textContent = bola;
+                listaUltimasBolas.appendChild(span);
+            });
+        }
+
+        // Função para limpar números marcados
+        function limparMarcados() {
+            numerosSorteados.clear();
+            document.querySelectorAll('td.sorteado').forEach(celula => {
+                celula.classList.remove('sorteado');
+            });
+            document.getElementById('bolaNumero').textContent = '--';
+            ultimasBolas.length = 0;
+            atualizarUltimasBolas();
+        }
+
+        // Criar a tabela ao carregar a página
+        window.onload = criarTabela;
+    </script>
+</body>
+</html>

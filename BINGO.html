@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartela de Bingo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        table {
+            margin: 0 auto;
+            border-collapse: collapse;
+            position: relative;
+        }
+        th, td {
+            border: 1px solid black;
+            width: 90px;
+            height: 90px;
+            text-align: center;
+            font-size: 40px;
+        }
+        th {
+            background-color: #f4b41a;
+            color: white;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        .free {
+            background-color: #d3f8d3;
+            font-weight: bold;
+        }
+        #numeroSerie {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #quantidadeCartelas {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cartela de Bingo</h1>
+    <div id="numeroSerie"></div>
+    <table id="bingoTable">
+        <thead>
+            <tr>
+                <th>B</th>
+                <th>I</th>
+                <th>N</th>
+                <th>G</th>
+                <th>O</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- As linhas da cartela serão geradas aqui -->
+        </tbody>
+    </table>
+    <button onclick="gerarCartela()">Gerar Nova Cartela</button>
+    <button onclick="gerarImagem()">Gerar Imagem da Cartela</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        let numeroDeSerie = 0;
+
+        function gerarCartela() {
+            numeroDeSerie++; // Incrementa o número de série
+            document.getElementById("numeroSerie").textContent = `Número de Série: ${numeroDeSerie}`;
+
+            const ranges = {
+                B: [1, 15],
+                I: [16, 30],
+                N: [31, 45],
+                G: [46, 60],
+                O: [61, 75]
+            };
+
+            const tabela = document.querySelector("#bingoTable tbody");
+            tabela.innerHTML = "";
+
+            let cartela = { B: [], I: [], N: [], G: [], O: [] };
+
+            for (let letra in ranges) {
+                const [min, max] = ranges[letra];
+                cartela[letra] = gerarNumerosAleatorios(min, max, 5);
+            }
+
+            cartela["N"][2] = "Ohana"; // Espaço do meio é grátis
+
+            for (let i = 0; i < 5; i++) {
+                const linha = document.createElement("tr");
+                for (let letra of "BINGO") {
+                    const celula = document.createElement("td");
+                    celula.textContent = cartela[letra][i];
+                    if (cartela[letra][i] === "Ohana") {
+                        celula.classList.add("Ohana");
+                    }
+                    linha.appendChild(celula);
+                }
+                tabela.appendChild(linha);
+            }
+        }
+
+        function gerarNumerosAleatorios(min, max, quantidade) {
+            const numeros = new Set();
+            while (numeros.size < quantidade) {
+                numeros.add(Math.floor(Math.random() * (max - min + 1)) + min);
+            }
+            return Array.from(numeros);
+        }
+
+        function gerarImagem() {
+            const tabela = document.getElementById("bingoTable");
+            const marcaDagua = document.createElement("div");
+            marcaDagua.textContent = `Nº Série: ${numeroDeSerie}`;
+            marcaDagua.style.position = "absolute";
+            marcaDagua.style.top = "50%";
+            marcaDagua.style.left = "50%";
+            marcaDagua.style.transform = "translate(-50%, -50%)";
+            marcaDagua.style.color = "rgba(0, 0, 0, 0.1)";
+            marcaDagua.style.fontSize = "8px";
+            marcaDagua.style.fontWeight = "bold";
+            marcaDagua.style.pointerEvents = "none";
+
+            tabela.parentElement.appendChild(marcaDagua);
+
+            html2canvas(tabela.parentElement).then(canvas => {
+                marcaDagua.remove(); // Remove a marca d'água após gerar a imagem
+                const link = document.createElement("a");
+                link.download = `Cartela_Bingo_${numeroDeSerie}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+
+        // Gera a primeira cartela ao carregar a página
+        window.onload = gerarCartela;
+    </script>
+</body>
+</html>
